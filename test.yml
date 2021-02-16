@@ -5,6 +5,11 @@ servers:
     environment:
         default: sandbox.apps.mybigid.com
         description: BigID installation hostname
+    port:
+      enum:
+        - '8443'
+        - '443'
+      default: '8443'
     
 info:
   description: This is a simple Dom API
