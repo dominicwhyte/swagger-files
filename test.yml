@@ -1,6 +1,11 @@
 openapi: 3.0.0
 servers:
-- url: https://httpbin.org
+- url: https://{environment}.org
+  variables:
+    environment:
+        default: sandbox.apps.mybigid.com
+        description: BigID installation hostname
+    
 info:
   description: This is a simple Dom API
   version: "1.0.0"
