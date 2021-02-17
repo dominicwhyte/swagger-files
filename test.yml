@@ -2,9 +2,9 @@ openapi: 3.0.0
 servers:
 - url: https://{inserthere}.org
   variables:
-    environment:
-        default: sandbox.apps.mybigid.com
-        description: BigID installation hostname
+    inserthere:
+        default: somehost
+        description: pick your desired host
     port:
       enum:
         - '8443'
