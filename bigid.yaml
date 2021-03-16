@@ -1,0 +1,546 @@
+openapi: 3.0.1
+info:
+  title: BigId web admin
+  description: Big Id Management console
+  version: 1.0.0
+servers:
+- url: '{environment}/api/v1'
+  variables:
+    environment:
+        default: https://sandbox.apps.mybigid.com
+        description: BigID installation hostname
+tags:
+- name: Scans
+paths:
+  /sessions:
+    post:
+      summary: retrive access token for the application
+      description: "Use this API to generate a session login token. A session login token expires 24 hours after creation. Use recieved token in header parameter 'authorization' in every succeeding API call. REQUEST: Put username and password. RESPONSE: Returns auth_token."
+      requestBody:
+        description: Auth request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+        required: true
+      responses:
+        401:
+          description: Unauthorized
+          content: {}
+      x-codegen-request-body-name: body
+  /scans:
+    get:
+      summary: get a list of scans
+      description: "This API provides a list of BigID scans and their completion status"
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      - name: filter
+        in: query
+        description: filter scans
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScanResult'
+        401:
+          description: Unauthorized
+          content: {}
+    post:
+      summary: invoke scan profile name with the relevant profile name
+      description: "This API allows you to initate a scan using a given scan profile."
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      requestBody:
+        description: Scan details to invoke
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanInvoke'
+        required: true
+      responses:
+        401:
+          description: Unauthorized
+          content: {}
+      x-codegen-request-body-name: body
+  /scans/{subScanId}/requestStop:
+    put:
+      summary: stop a specific scan
+      description: Given a scan ID, stop that scan from running. Note that this will not happen immediately. Using the /scans endpoint can tell you the status.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      - name: subScanId
+        in: path
+        description: bbb
+        required: true
+        schema:
+          type: string
+      responses:
+        401:
+          description: Unauthorized
+          content: {}
+  /scanProfiles:
+    get:
+      summary: get all scan profiles
+      description: Get a listing of all scan profiles for you to run scans against.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScanProfile'
+            Simple Scan Profile:
+              example:
+                _id: 5a0d86459f6841001178d209
+                created_at: 2017-11-16T12:36:21.867Z
+                updated_at: 2017-11-16T12:36:21.867Z
+                scanType: dsScan
+                allEnabledIdSor: false
+                allEnabledDs: false
+                name: aws-mysql-data1m
+                description: aws-mysql-data1m
+                isCustomScanProfile: true
+                active: false
+                dataSourceList:
+                - Data source 1
+                - Data source 2
+                idsorList:
+                - Identites 1
+            Scheduled Scan Profile:
+              example:
+                _id: 5a0db10caf83d60012a3be39
+                created_at: 2017-11-16T12:36:21.867Z
+                updated_at: 2017-11-16T12:36:21.867Z
+                scanType: dsScan
+                allEnabledIdSor: false
+                allEnabledDs: false
+                name: aws-mysql-data1m
+                description: aws-mysql-data1m
+                isCustomScanProfile: true
+                active: false
+                schedule: 0 22 * * *
+                dataSourceList:
+                - Data source 1
+                - Data source 2
+                idsorList:
+                - Identites 1
+    post:
+      summary: create a scan profile
+      description: Create a scan profile to run a scan against
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      requestBody:
+        description: Scan details to invoke
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScanProfile'
+        required: false
+      responses:
+        401:
+          description: Unauthorized
+          content: {}
+      x-codegen-request-body-name: body
+  /ds_connections:
+    get:
+      summary: get a list of all ds connections
+      description: Returns a list of all Data Source Connections within the system. Data sources are the systems that BigID is set up to scan.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DsConnection'
+            _id:
+              example: 5826d66c0424c72e4cd7e9d5
+            id:
+              example: My Database
+            name:
+              example: MS-SQL
+            rdb_url:
+              example: aws-mssql.xxxxxxxxx.us-west-2.rds.amazonaws.com
+            rdb_name:
+              example: bigid
+            username:
+              example: bigid
+            password:
+              example: xxxxxxxxxxx
+            location:
+              example: Germany
+            type:
+              example: rdb-mssql
+            security_tier:
+              example: "1"
+            enabled:
+              example: yes
+            differential:
+              example: true
+            last_scan_at:
+              example: 1507014884865
+            rdb_is_sample_data:
+              example: true
+            rdb_sample_data_max_size:
+              example: "200"
+        401:
+          description: Unauthorized
+          content: {}
+    post:
+      summary: create ds connection
+      description: Create a new data source connection for BigID to scan. This will just create the connection. You will need to manually run a scan or wait for one to occur to gain insight about this data source.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      requestBody:
+        description: Scan details to invoke
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DsConnection'
+        required: true
+      responses:
+        200:
+          description: success
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+      x-codegen-request-body-name: body
+  /ds_connections/{connectionName}:
+    put:
+      summary: update Ds Connection
+      description: Update the details about a data source. This could mean just updating the IP address to a new system or more.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      - name: connectionName
+        in: path
+        description: bbb
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: DS conection details to update
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/DsConnection'
+        required: true
+      responses:
+        200:
+          description: OK
+          content: {}
+      x-codegen-request-body-name: body
+  /identityLocations:
+    get:
+      summary: get identity locations
+      description: Get the real world locations of the entities within your systems. This requires you've set up a location field in your correleation learning sets.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  identity_locations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        count:
+                          type: number
+                        avg:
+                          type: number
+                        max:
+                          type: number
+  /systemLocations:
+    get:
+      summary: get system locations
+      description: Get the physical locations for your data sources as specified in their data source configuration.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  system_locations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        count:
+                          type: number
+                        avg:
+                          type: number
+                        max:
+                          type: number
+                        systems:
+                          type: array
+                          items:
+                            type: string
+  /sourceRisks:
+    get:
+      summary: get source risks
+      description: Get the risk score for your data sources. This risk score is user configurable within the Risk Configuration application.
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  source_risks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        count:
+                          type: number
+                        avg:
+                          type: number
+                        max:
+                          type: number
+  /piiInvestigationsCount:
+    get:
+      summary: get pii investigation count
+      description: Get a count of the number of entities with cached data
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  piiInvestigationCount:
+                    type: number
+  /riskTrends:
+    get:
+      summary: get risk trends
+      description: Get a reporting of the risk score for given search criteria
+      parameters:
+      - name: Authorization
+        in: header
+        description: API key for BigID
+        schema:
+          type: string
+      responses:
+        200:
+          description: success
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  risk_trends:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        risk:
+                          type: number
+                        count:
+                          type: number
+                        date:
+                          type: string
+components:
+  securitySchemes:
+     ApiKeyAuth:        # arbitrary name for the security scheme
+      type: apiKey
+      in: header       # can be "header", "query" or "cookie"
+      name: Authorization
+  schemas:
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: some_username
+        password:
+          type: string
+          example: some_password
+    ScanInvoke:
+      type: object
+      properties:
+        scanType:
+          type: string
+          example: dsScan
+        scanProfileName:
+          type: string
+          example: scan-profile1
+    ScanProfile:
+      required:
+      - active
+      - allEnabledDs
+      - allEnabledIdSor
+      - description
+      - isCustomScanProfile
+      - name
+      - scanType
+      type: object
+      properties:
+        scanType:
+          type: string
+        allEnabledIdSor:
+          type: boolean
+        allEnabledDs:
+          type: boolean
+        name:
+          type: string
+        description:
+          type: string
+        isCustomScanProfile:
+          type: boolean
+        active:
+          type: boolean
+        schedule:
+          type: string
+        dataSourceList:
+          type: array
+          items:
+            type: string
+        idsorList:
+          type: array
+          items:
+            type: string
+    ScanResult:
+      type: object
+      properties:
+        name:
+          type: string
+        state:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        noFindingsForCorrelation:
+          type: boolean
+        collectionForCorrelation:
+          type: string
+        identities_scanned:
+          type: integer
+    DsConnection:
+      type: object
+      properties:
+        password:
+          type: string
+        name:
+          type: string
+        rdb_is_sample_data:
+          type: boolean
+        rdb_url:
+          type: string
+        rdb_name:
+          type: string
+          example: hhhhhh
+        rdb_conn_properties:
+          type: string
+        rdb_comma_sep_table_list:
+          type: string
+        rdb_is_only_user_objects:
+          type: boolean
+        enrichment_is_enabled:
+          type: boolean
+        classification_is_enabled:
+          type: boolean
+        username:
+          type: string
+        type:
+          type: string
+        security_tier:
+          type: string
+        enabled:
+          type: string
+        differntial:
+          type: boolean
+        comment:
+          type: string
+security:
+  - ApiKeyAuth: [] 
