@@ -32,6 +32,11 @@ paths:
           required: false
           schema:
             type: string
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: search results matching criteria
